@@ -1,0 +1,20 @@
+[project]
+name = "athleticspose"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib>=3.10.0",
+    "natsort>=8.4.0",
+    "opencv-python>=4.11.0.86",
+    "plotly>=6.0.0",
+]
+
+[dependency-groups]
+test = [
+    "pytest>=8.3.4",
+]
+exp = [
+    "jupyter>=1.1.1",
+]
