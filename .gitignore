@@ -1,5 +1,7 @@
 .DS_Store
 raw_mocap_data/
+data/
+notebooks/
 uv.lock
 
 # Byte-compiled / optimized / DLL files
