@@ -53,32 +53,38 @@ class Camera:
         )
 
         return {
-            "affine_intrinsics_matrix": [
+            "affine_intrinsics_matrix": np.array(
                 [
-                    cam["Intrinsic"]["FocalLengthU"] / scale_u,
-                    cam["Intrinsic"]["Skew"],
-                    cam["Intrinsic"]["CenterPointU"] / scale_u - cam["FovVideo"]["Left"],
-                ],
+                    [
+                        cam["Intrinsic"]["FocalLengthU"] / scale_u,
+                        cam["Intrinsic"]["Skew"],
+                        cam["Intrinsic"]["CenterPointU"] / scale_u - cam["FovVideo"]["Left"],
+                    ],
+                    [
+                        0.0,
+                        cam["Intrinsic"]["FocalLengthV"] / scale_v,
+                        cam["Intrinsic"]["CenterPointV"] / scale_v - cam["FovVideo"]["Top"],
+                    ],
+                    [0.0, 0.0, 1.0],
+                ]
+            ),
+            "distortion": np.array(
                 [
-                    0.0,
-                    cam["Intrinsic"]["FocalLengthV"] / scale_v,
-                    cam["Intrinsic"]["CenterPointV"] / scale_v - cam["FovVideo"]["Top"],
-                ],
-                [0.0, 0.0, 1.0],
-            ],
-            "distortion": [
-                cam["Intrinsic"]["RadialDistortion1"],
-                cam["Intrinsic"]["RadialDistortion2"],
-                cam["Intrinsic"]["RadialDistortion3"],
-                cam["Intrinsic"]["TangentalDistortion1"],
-                cam["Intrinsic"]["TangentalDistortion2"],
-            ],
-            "extrinsic_matrix": [
-                [cam["Transform"]["r11"], cam["Transform"]["r12"], cam["Transform"]["r13"]],
-                [cam["Transform"]["r21"], cam["Transform"]["r22"], cam["Transform"]["r23"]],
-                [cam["Transform"]["r31"], cam["Transform"]["r32"], cam["Transform"]["r33"]],
-            ],
-            "xyz": [cam["Transform"]["x"], cam["Transform"]["y"], cam["Transform"]["z"]],
+                    cam["Intrinsic"]["RadialDistortion1"],
+                    cam["Intrinsic"]["RadialDistortion2"],
+                    cam["Intrinsic"]["RadialDistortion3"],
+                    cam["Intrinsic"]["TangentalDistortion1"],
+                    cam["Intrinsic"]["TangentalDistortion2"],
+                ]
+            ),
+            "extrinsic_matrix": np.array(
+                [
+                    [cam["Transform"]["r11"], cam["Transform"]["r12"], cam["Transform"]["r13"]],
+                    [cam["Transform"]["r21"], cam["Transform"]["r22"], cam["Transform"]["r23"]],
+                    [cam["Transform"]["r31"], cam["Transform"]["r32"], cam["Transform"]["r33"]],
+                ]
+            ),
+            "xyz": np.array([cam["Transform"]["x"], cam["Transform"]["y"], cam["Transform"]["z"]]),
         }
 
     def world_to_image(self, kpts_world: np.ndarray, cam_idx: int) -> np.ndarray:
@@ -96,17 +102,17 @@ class Camera:
             raise ValueError(f"Invalid camera index: {cam_idx}")
 
         intrinsics = self.camera_params[cam_idx]["affine_intrinsics_matrix"]
-        rot_mat = np.array(self.camera_params[cam_idx]["extrinsic_matrix"])
-        rot_mat[1:, :] *= -1
-        camera_position = np.array(self.camera_params[cam_idx]["xyz"])
+        rot_mat = self.camera_params[cam_idx]["extrinsic_matrix"].copy()
+        rot_mat[1:] *= -1
+        camera_position = self.camera_params[cam_idx]["xyz"]
 
         frames, joints, _ = kpts_world.shape
         translated_kpts = kpts_world.reshape(-1, 3) - camera_position
         kpts_cam = translated_kpts @ rot_mat.T
 
         kpts_image = np.zeros((frames * joints, 2))
-        kpts_image[:, 0] = intrinsics[0][0] * (kpts_cam[:, 0] / kpts_cam[:, 2]) + intrinsics[0][2]
-        kpts_image[:, 1] = intrinsics[1][1] * (kpts_cam[:, 1] / kpts_cam[:, 2]) + intrinsics[1][2]
+        kpts_image[:, 0] = intrinsics[0, 0] * (kpts_cam[:, 0] / kpts_cam[:, 2]) + intrinsics[0, 2]
+        kpts_image[:, 1] = intrinsics[1, 1] * (kpts_cam[:, 1] / kpts_cam[:, 2]) + intrinsics[1, 2]
         return kpts_image.reshape(frames, joints, 2)
 
     def world_to_camera(self, kpts_world: np.ndarray, cam_idx: int) -> np.ndarray:
@@ -123,9 +129,9 @@ class Camera:
         if cam_idx not in self.camera_params:
             raise ValueError(f"Invalid camera index: {cam_idx}")
 
-        rot_mat = np.array(self.camera_params[cam_idx]["extrinsic_matrix"])
-        rot_mat[1:, :] *= -1
-        camera_position = np.array(self.camera_params[cam_idx]["xyz"])
+        rot_mat = self.camera_params[cam_idx]["extrinsic_matrix"].copy()
+        rot_mat[1:] *= -1
+        camera_position = self.camera_params[cam_idx]["xyz"]
 
         frames, joints, _ = kpts_world.shape
         translated_kpts = kpts_world.reshape(-1, 3) - camera_position
@@ -150,8 +156,13 @@ class Camera:
         frames, joints, _ = kpts_cam.shape
         kpts_cam_reshaped = kpts_cam.reshape(-1, 3)
         kpts_image = np.zeros((frames * joints, 2))
-        kpts_image[:, 0] = intrinsics[0][0] * (kpts_cam_reshaped[:, 0] / kpts_cam_reshaped[:, 2]) + intrinsics[0][2]
-        kpts_image[:, 1] = intrinsics[1][1] * (kpts_cam_reshaped[:, 1] / kpts_cam_reshaped[:, 2]) + intrinsics[1][2]
+
+        x = kpts_cam_reshaped[:, 0] / kpts_cam_reshaped[:, 2]
+        y = kpts_cam_reshaped[:, 1] / kpts_cam_reshaped[:, 2]
+
+        kpts_image[:, 0] = intrinsics[0, 0] * x + intrinsics[0, 2]
+        kpts_image[:, 1] = intrinsics[1, 1] * y + intrinsics[1, 2]
+
         return kpts_image.reshape(frames, joints, 2)
 
     def camera_to_pixel3d(
@@ -178,15 +189,15 @@ class Camera:
         scales = np.zeros(frames)
 
         intrinsics = self.camera_params[cam_idx]["affine_intrinsics_matrix"]
-        kpts_pixel[..., 0] = intrinsics[0][0] * (kpts_cam[..., 0] / kpts_cam[..., 2]) + intrinsics[0][2]
-        kpts_pixel[..., 1] = intrinsics[1][1] * (kpts_cam[..., 1] / kpts_cam[..., 2]) + intrinsics[1][2]
+        kpts_pixel[..., 0] = intrinsics[0, 0] * (kpts_cam[..., 0] / kpts_cam[..., 2]) + intrinsics[0, 2]
+        kpts_pixel[..., 1] = intrinsics[1, 1] * (kpts_cam[..., 1] / kpts_cam[..., 2]) + intrinsics[1, 2]
 
-        root_joints = kpts_cam[:, root_idx, :]
+        root_joints = kpts_cam[:, root_idx]
         for i in range(frames):
             ref_near = root_joints[i] - np.array([1000, 0, 0])
             ref_far = root_joints[i] + np.array([1000, 0, 0])
-            x_near = intrinsics[0][0] * (ref_near[0] / ref_near[2]) + intrinsics[0][2]
-            x_far = intrinsics[0][0] * (ref_far[0] / ref_far[2]) + intrinsics[0][2]
+            x_near = intrinsics[0, 0] * (ref_near[0] / ref_near[2]) + intrinsics[0, 2]
+            x_far = intrinsics[0, 0] * (ref_far[0] / ref_far[2]) + intrinsics[0, 2]
             scales[i] = (x_far - x_near) / 2000
             kpts_pixel[i, :, 2] = (kpts_cam[i, :, 2] - root_joints[i, 2]) * scales[i]
 
