@@ -19,5 +19,13 @@ exp = [
     "jupyter>=1.1.1",
 ]
 
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["athleticspose"]
+
 [tool.ruff]
 unfixable = ["F401"]
