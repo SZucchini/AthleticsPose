@@ -74,3 +74,30 @@ def test_invalid_camera_index(camera: Camera):
 
     with pytest.raises(ValueError):
         camera.world_to_image(test_points, invalid_cam_idx)
+
+
+def test_camera_to_image(camera: Camera):
+    """Test for the camera_to_image method."""
+    frames, joints = 2, 3
+    test_points = np.random.rand(frames, joints, 3)
+
+    cam_idx = 0
+    kpts_image = camera.camera_to_image(test_points, cam_idx)
+
+    assert kpts_image.shape == (frames, joints, 2)
+    assert not np.any(np.isnan(kpts_image))
+    assert not np.any(np.isinf(kpts_image))
+
+
+def test_camera_to_pixel3d(camera: Camera):
+    """Test for the camera_to_pixel3d method."""
+    frames, joints = 2, 3
+    test_points = np.random.rand(frames, joints, 3)
+
+    cam_idx = 0
+    kpts_pixel, scales = camera.camera_to_pixel3d(test_points, cam_idx)
+    kpts_image = camera.camera_to_image(test_points, cam_idx)
+
+    assert kpts_pixel.shape == (frames, joints, 3)
+    assert scales.shape == (frames,)
+    assert np.allclose(kpts_pixel[:, :, :2], kpts_image)
