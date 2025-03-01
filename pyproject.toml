@@ -9,6 +9,7 @@ dependencies = [
     "natsort>=8.4.0",
     "opencv-python>=4.11.0.86",
     "plotly>=6.0.0",
+    "seaborn>=0.13.2",
 ]
 
 [dependency-groups]
