@@ -21,6 +21,38 @@ def mocap_to_h36m(mocap_markers: np.ndarray) -> np.ndarray:
     return h36m_markers
 
 
+def normalize_kpts(kpts: np.ndarray) -> tuple[np.ndarray, float]:
+    """Normalize the keypoints to the range [-1, 1].
+
+    Args:
+        kpts: The keypoints to normalize. The shape should be (T, 17, 3).
+
+    Returns:
+        kpts_norm: The normalized keypoints. The shape is (T, 17, 3).
+        norm_scale: The normalization scale used for denormalization.
+
+    """
+    kpts = kpts - kpts[:, 0:1, :]
+    norm_scale = np.max(np.abs(kpts))
+    kpts_norm = kpts / norm_scale
+    return kpts_norm, norm_scale
+
+
+def denormalize_kpts(kpts_norm: np.ndarray, norm_scale: float) -> np.ndarray:
+    """Denormalize the keypoints scale.
+
+    Args:
+        kpts_norm: The normalized keypoints. The shape is (T, 17, 3).
+        norm_scale: The normalization scale used for denormalization.
+
+    Returns:
+        kpts_denom: The denormalized keypoints. The shape is (T, 17, 3).
+
+    """
+    kpts_denom = kpts_norm * norm_scale
+    return kpts_denom
+
+
 def create_frame_indices(
     sequence_length: int,
     target_length: int,
