@@ -100,9 +100,8 @@ class GCN(nn.Module):
         node_degrees = adj.detach().sum(dim=-1)
         deg_inv_sqrt = node_degrees**-0.5
         norm_deg_matrix = torch.eye(n)
-        dev = adj.get_device()
-        if dev >= 0:
-            norm_deg_matrix = norm_deg_matrix.to(dev)
+        dev = adj.device
+        norm_deg_matrix = norm_deg_matrix.to(dev)
         norm_deg_matrix = norm_deg_matrix.view(1, n, n) * deg_inv_sqrt.view(b, n, 1)
         norm_adj = torch.bmm(torch.bmm(norm_deg_matrix, adj), norm_deg_matrix)
 
@@ -110,9 +109,8 @@ class GCN(nn.Module):
 
     def change_adj_device_to_cuda(self, adj):
         """Change the device of the adjacency matrix to the device of the model."""
-        dev = self.V.weight.get_device()
-        if dev >= 0 and adj.get_device() < 0:
-            adj = adj.to(dev)
+        dev = self.V.weight.device
+        adj = adj.to(dev)
         return adj
 
     def forward(self, x):
