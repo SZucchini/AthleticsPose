@@ -125,9 +125,10 @@ class MotionDataset3D(Dataset):
                 input2d = self.transform(input2d)
                 label3d = self.transform(label3d)
 
-        input2d = torch.FloatTensor(input2d)
-        label3d = torch.FloatTensor(label3d)
-        p2mm = torch.FloatTensor(p2mm)
+        input2d = torch.FloatTensor(input2d).to(torch.float32)
+        label3d = torch.FloatTensor(label3d).to(torch.float32)
+        p2mm = torch.FloatTensor(p2mm).to(torch.float32)
+        norm_scale = np.float32(norm_scale)
 
         return (
             input2d,
