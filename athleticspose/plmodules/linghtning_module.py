@@ -132,8 +132,8 @@ class LightningPose3D(pl.LightningModule):
         pred_denom = np.zeros_like(pred)
         y_denom = np.zeros_like(y)
         for i in range(pred.shape[0]):
-            pred_denom[i, :, :, :] = pred[i] / norm_scale[i]
-            y_denom[i, :, :, :] = y[i] / norm_scale[i]
+            pred_denom[i, :, :, :] = pred[i] * norm_scale[i]
+            y_denom[i, :, :, :] = y[i] * norm_scale[i]
         pred_denom = pred_denom / p2mm[:, :, None, None]
         y_denom = y_denom / p2mm[:, :, None, None]
 
