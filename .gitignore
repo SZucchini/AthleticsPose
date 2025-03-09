@@ -2,6 +2,8 @@
 raw_mocap_data/
 data/
 notebooks/
+wandb/
+work_dir/
 uv.lock
 
 # Byte-compiled / optimized / DLL files
