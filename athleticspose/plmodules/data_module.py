@@ -29,12 +29,34 @@ class PoseDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         """Train dataloader."""
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4)
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=8,
+            persistent_workers=True,
+            pin_memory=True,
+            multiprocessing_context="forkserver",
+        )
 
     def val_dataloader(self):
         """Validate dataloader."""
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=4)
+        return DataLoader(
+            self.val_dataset,
+            batch_size=self.batch_size,
+            num_workers=4,
+            persistent_workers=True,
+            pin_memory=True,
+            multiprocessing_context="forkserver",
+        )
 
     def test_dataloader(self):
         """Test dataloader."""
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=4)
+        return DataLoader(
+            self.test_dataset,
+            batch_size=self.batch_size,
+            num_workers=4,
+            persistent_workers=True,
+            pin_memory=True,
+            multiprocessing_context="forkserver",
+        )
