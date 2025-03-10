@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import torch
 
-from athleticspose.inference import Pose3DInference
+from athleticspose.inference import Pose3DInferencer
 
 CHECKPOINT_PATH = "work_dir/20250302_110906/best.ckpt"
 
@@ -21,7 +21,7 @@ def force_cpu(monkeypatch):
 
 def test_split_into_clips():
     """Test splitting poses into clips."""
-    inferencer = Pose3DInference(CHECKPOINT_PATH)
+    inferencer = Pose3DInferencer(CHECKPOINT_PATH)
 
     # Test exact division
     poses = np.random.rand(81, 17, 3)
@@ -45,7 +45,7 @@ def test_split_into_clips():
 
 def test_preprocess():
     """Test preprocessing function."""
-    inferencer = Pose3DInference(CHECKPOINT_PATH)
+    inferencer = Pose3DInferencer(CHECKPOINT_PATH)
 
     # Create test data with both coordinates and scores
     poses_2d = np.zeros((100, 17, 3))
@@ -59,51 +59,49 @@ def test_preprocess():
     poses_2d[..., :2] += root_offset
 
     # Preprocess
-    batch, norm_info = inferencer.preprocess(poses_2d)
+    batch = inferencer.preprocess(poses_2d)
 
     # Check basic shapes
     assert isinstance(batch, torch.Tensor)
     assert batch.shape == (2, 81, 17, 3)  # 2 clips for 100 frames
     assert batch.device == torch.device("cpu")  # Verify CPU device
 
-    # Verify normalization (root should be at origin)
-    assert torch.allclose(batch[..., 0, :2], torch.zeros(2))
+    # Verify normalization (root joint should be roughly at origin)
+    root_positions = batch[..., 0, :2].cpu().numpy()
+    assert np.allclose(root_positions, 0, atol=1e-6)
 
     # Verify scores are preserved
-    for clip_idx, (_, clip_scores) in enumerate(norm_info):
+    original_scores = poses_2d[..., 2]
+    for clip_idx in range(batch.shape[0]):
         start_idx = clip_idx * 81
         end_idx = min(start_idx + 81, poses_2d.shape[0])
         valid_frames = end_idx - start_idx
-        assert np.array_equal(clip_scores[:valid_frames], scores[start_idx:end_idx])
+        assert np.allclose(
+            batch[clip_idx, :valid_frames, :, 2].cpu().numpy(),
+            original_scores[start_idx:end_idx],
+        )
 
 
 def test_postprocess():
     """Test postprocessing function."""
-    inferencer = Pose3DInference(CHECKPOINT_PATH)
+    inferencer = Pose3DInferencer(CHECKPOINT_PATH)
 
-    # Create test predictions and normalization info
+    # Create test predictions
     original_length = 100
     predictions = np.random.rand(2, 81, 17, 3)  # 2 clips
-    norm_scales = [2.5, 2.0]  # Random scales
-    scores = [np.random.rand(81, 17), np.random.rand(81, 17)]
-    norm_info = list(zip(norm_scales, scores, strict=False))
 
     # Run postprocessing
-    processed = inferencer.postprocess(predictions, original_length, norm_info)
+    processed = inferencer.postprocess(predictions, original_length)
 
     # Check output shape
     assert processed.shape == (original_length, 17, 3)
 
-    # Verify scale restoration
-    first_clip = predictions[0] * norm_scales[0]
-    assert np.array_equal(processed[:81], first_clip)
-
-    second_clip_valid_frames = original_length - 81
-    second_clip = predictions[1] * norm_scales[1]
-    assert np.array_equal(processed[81:], second_clip[:second_clip_valid_frames])
+    # Verify correct frame selection
+    assert np.array_equal(processed[:81], predictions[0][:81])
+    assert np.array_equal(processed[81:], predictions[1][:19])
 
 
-def test_end_to_end():
+def test_predict():
     """Test complete inference pipeline."""
     # Create test data
     poses_2d = np.random.rand(200, 17, 3)  # 200 frames
@@ -113,15 +111,19 @@ def test_end_to_end():
     poses_2d[..., 2] = scores
 
     # Initialize inferencer
-    inferencer = Pose3DInference(CHECKPOINT_PATH)
+    inferencer = Pose3DInferencer(CHECKPOINT_PATH)
 
     # Verify using CPU
     assert inferencer.device == torch.device("cpu")
 
-    # Run inference
+    # Test with default batch size
     poses_3d = inferencer.predict(poses_2d)
-
-    # Verify output
     assert poses_3d.shape == (200, 17, 3)  # Same time length as input
     assert not np.any(np.isnan(poses_3d))  # No NaN values
     assert np.all(np.isfinite(poses_3d))  # No infinite values
+
+    # Test with custom batch size
+    poses_3d_batched = inferencer.predict(poses_2d, batch_size=1)
+    assert poses_3d_batched.shape == (200, 17, 3)
+    assert not np.any(np.isnan(poses_3d_batched))
+    assert np.all(np.isfinite(poses_3d_batched))
