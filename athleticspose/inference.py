@@ -9,11 +9,11 @@ from athleticspose.plmodules.linghtning_module import LightningPose3D
 from athleticspose.preprocess.utils import normalize_kpts
 
 
-class Pose3DInference:
+class Pose3DInferencer:
     """3D pose inference class."""
 
     def __init__(self, checkpoint_path: str):
-        """Initialize 3D pose inference.
+        """Initialize 3D pose inferencer.
 
         Args:
             checkpoint_path (str): Path to model checkpoint.
@@ -71,8 +71,7 @@ class Pose3DInference:
             poses_2d (np.ndarray): 2D poses. Shape: (T, J, 3).
 
         Returns:
-            torch.Tensor: Preprocessed 2D poses. Shape: (N, 81, J, 3).
-            list[tuple[float, np.ndarray]]: List of (norm_scale, scores) for each clip.
+            batch (torch.Tensor): Processed batch of clips. Shape: (N, 81, J, 3).
 
         """
         # Split into clips first
@@ -80,47 +79,31 @@ class Pose3DInference:
 
         # Process each clip
         processed_clips = []
-        norm_info = []
-
         for clip in clips:
-            # Save scores before normalization
             scores = clip[..., 2].copy()
-
-            # Normalize only xy coordinates
-            clip_coords = clip[..., :2]
-            # Add dummy z coordinate for normalize_kpts
-            clip_coords = np.concatenate([clip_coords, np.zeros_like(clip_coords[..., :1])], axis=-1)
-
-            # Normalize
+            clip_coords = clip
             clip_norm, norm_scale = normalize_kpts(clip_coords)
 
             # Restore scores
-            clip_norm = clip_norm[..., :2]  # Remove dummy z coordinate
+            clip_norm = clip_norm[..., :2]
             clip_with_scores = np.concatenate([clip_norm, scores[..., None]], axis=-1)
-
             processed_clips.append(clip_with_scores)
-            norm_info.append((norm_scale, scores))
 
         # Stack clips into batch
         batch = np.stack(processed_clips)
-
-        # Convert to torch tensor
         batch = torch.from_numpy(batch).float().to(self.device)
-
-        return batch, norm_info
+        return batch
 
     def postprocess(
         self,
         predictions: np.ndarray,
         original_length: int,
-        norm_info: list[tuple[float, np.ndarray]],
     ) -> np.ndarray:
         """Postprocess predictions by restoring original scale and combining clips.
 
         Args:
             predictions (np.ndarray): Model predictions. Shape: (N, 81, J, 3).
             original_length (int): Original sequence length.
-            norm_info (list[tuple[float, np.ndarray]]): Normalization info for each clip.
 
         Returns:
             np.ndarray: Processed predictions. Shape: (T, J, 3).
@@ -129,11 +112,7 @@ class Pose3DInference:
         final_predictions = []
         current_frame = 0
 
-        for pred, (norm_scale, _) in zip(predictions, norm_info, strict=False):
-            # Restore scale
-            pred = pred * norm_scale
-
-            # Extract valid frames
+        for pred in predictions:
             remaining_frames = original_length - current_frame
             valid_frames = min(self.clip_length, remaining_frames)
 
@@ -160,21 +139,22 @@ class Pose3DInference:
 
         """
         original_length = poses_2d.shape[0]
+        batch = self.preprocess(poses_2d)
 
-        # Preprocess input
-        batch, norm_info = self.preprocess(poses_2d)
-
-        # Process in batches if specified
         if batch_size is not None:
             predictions = []
-            for i in range(0, len(batch), batch_size):
-                batch_predictions = self.model(batch[i : i + batch_size])
-                predictions.append(batch_predictions.cpu().numpy())
-            predictions = np.concatenate(predictions)
+            if len(batch) > 0:
+                for i in range(0, len(batch), batch_size):
+                    batch_predictions = self.model(batch[i : i + batch_size])
+                    predictions.append(batch_predictions.cpu().numpy())
+                if len(predictions) == 1:
+                    predictions = np.array(predictions)
+                else:
+                    predictions = np.concatenate(predictions, axis=0)
+            else:
+                raise ValueError("No clips to process.")
         else:
             predictions = self.model(batch).cpu().numpy()
 
-        # Post-process predictions
-        poses_3d = self.postprocess(predictions, original_length, norm_info)
-
+        poses_3d = self.postprocess(predictions, original_length)
         return poses_3d
