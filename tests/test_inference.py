@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import torch
 
-from athleticspose.inference import Pose3DInferencer
+from athleticspose.inferencer import Pose3DInferencer
 
 CHECKPOINT_PATH = "work_dir/20250302_110906/best.ckpt"
 

@@ -4,7 +4,7 @@ import argparse
 
 import numpy as np
 
-from athleticspose.inference import Pose3DInference
+from athleticspose.inferencer import Pose3DInferencer
 
 
 def main():
@@ -40,7 +40,7 @@ def main():
     poses_2d = np.load(args.input)
 
     # Initialize inferencer
-    inferencer = Pose3DInference(args.checkpoint)
+    inferencer = Pose3DInferencer(args.checkpoint)
 
     # Run inference
     poses_3d = inferencer.predict(poses_2d, args.batch_size)
