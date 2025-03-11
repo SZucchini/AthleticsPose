@@ -13,7 +13,9 @@ from athleticspose.preprocess.pose_format import PoseFormatConverter
 DEFAULT_CHECKPOINT = "work_dir/20250302_110906/best.ckpt"
 DEFAULT_MMDET_CONFIG = "athleticspose/mmpose/mmdet_cfg/rtmdet.py"
 DEFAULT_MMPOSE_CONFIG = "athleticspose/mmpose/config/td-hm_ViTPose-base_8xb64-210e_coco-256x192.py"
-DEFAULT_DET_WEIGHTS = "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_m_8xb32-300e_coco/rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c.pth"
+DEFAULT_DET_WEIGHTS = (
+    "https://download.openmmlab.com/mmpose/v1/projects/rtmpose/rtmdet_m_8xb32-100e_coco-obj365-person-235e8209.pth"
+)
 DEFAULT_POSE_WEIGHTS = "https://download.openmmlab.com/mmpose/v1/body_2d_keypoint/topdown_heatmap/coco/td-hm_ViTPose-base_8xb64-210e_coco-256x192-216eae50_20230314.pth"
 
 
