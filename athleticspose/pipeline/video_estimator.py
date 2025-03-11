@@ -7,6 +7,7 @@ import numpy as np
 from mmdet.apis import inference_detector, init_detector
 from mmpose.apis import inference_topdown
 from mmpose.apis import init_model as init_pose_estimator
+from mmpose.evaluation.functional import nms
 from mmpose.utils import adapt_mmdet_pipeline
 
 
@@ -66,16 +67,17 @@ class VideoEstimator:
         """
         # Get instance predictions
         pred_instance = det_results.pred_instances.cpu().numpy()
+        bboxes = np.concatenate((pred_instance.bboxes, pred_instance.scores[:, None]), axis=1)
+        person_bboxes = bboxes[np.logical_and(pred_instance.labels == 0, pred_instance.scores > 0.5)]
+        person_bboxes = person_bboxes[nms(person_bboxes, 0.3), :]
 
         # Extract person bounding boxes (assuming person is category 0)
-        person_bboxes = pred_instance.bboxes[pred_instance.labels == 0]
         if len(person_bboxes) == 0:
             return None
 
-        # Get bbox with maximum area
-        areas = (person_bboxes[:, 2] - person_bboxes[:, 0]) * (person_bboxes[:, 3] - person_bboxes[:, 1])
-        max_idx = np.argmax(areas)
-        return person_bboxes[max_idx]
+        # Get bbox with maximum score
+        max_idx = np.argmax(person_bboxes[:, -1])
+        return person_bboxes[max_idx, :4]
 
     def process_frame(self, frame: np.ndarray) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
         """Process a single frame.
