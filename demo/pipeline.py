@@ -27,7 +27,7 @@ class VideoPosePipeline:
         self,
         checkpoint_path: str,
         device: str = "cuda:0",
-        max_duration: float = 3.0,
+        max_duration: float = 10.0,
         target_resolution: Tuple[int, int] = (1280, 720),
     ):
         """Initialize pipeline.

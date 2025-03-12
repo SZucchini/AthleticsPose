@@ -74,8 +74,8 @@ def create_pose_demo(checkpoint_path: str) -> gr.Blocks:
             Since this is a demo, the performance is unstable.
 
             **Note:**
-            - Recommended video duration: 5 seconds or less
-            - Recommended resolution: HD (1280x720)
+            - Recommended video duration: less than 10 seconds
+            - Recommended resolution: Full HD (1920x1080)
             """
         )
 
