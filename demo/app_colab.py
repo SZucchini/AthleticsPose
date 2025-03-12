@@ -80,7 +80,6 @@ def create_pose_demo(checkpoint_path: str) -> gr.Blocks:
                     label="Input Video",
                     format="mp4",
                     sources=["upload"],
-                    source="upload",  # for backwards compatibility
                     height=300,
                 )
                 submit_btn = gr.Button("Estimate Poses", variant="primary")
