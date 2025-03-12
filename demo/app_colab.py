@@ -31,25 +31,30 @@ def create_pose_demo(checkpoint_path: str) -> gr.Blocks:
     pipeline = VideoPosePipeline(checkpoint_path=checkpoint_path)
     visualizer = PoseVisualizer()
 
-    def process_video(video_path: str, progress: gr.Progress) -> str:
+    def process_video(video_path: str, progress: Optional[gr.Progress] = None) -> str:
         """Process video and create visualization.
 
         Args:
             video_path (str): Path to input video
-            progress (gr.Progress): Progress indicator
+            progress (Optional[gr.Progress], optional): Progress indicator. Defaults to None.
 
         Returns:
             str: Path to output video
 
         """
+
+        def update_progress(value: float, desc: str):
+            if progress is not None:
+                progress(value, desc=desc)
+
         # Update progress
-        progress(0, desc="Estimating poses...")
+        update_progress(0, "Estimating poses...")
 
         # Process video
         poses_3d = pipeline.process_video(video_path)
 
         # Update progress
-        progress(0.5, desc="Creating visualization...")
+        update_progress(0.5, "Creating visualization...")
 
         # Create animation
         temp_dir = tempfile.mkdtemp()
@@ -57,7 +62,7 @@ def create_pose_demo(checkpoint_path: str) -> gr.Blocks:
         output_video = visualizer.create_animation(poses_3d, output_path)
 
         # Update progress
-        progress(1.0, desc="Done!")
+        update_progress(1.0, "Done!")
 
         return output_video
 
@@ -110,7 +115,10 @@ def main(checkpoint_path: str):
     """
     demo = create_pose_demo(checkpoint_path)
     # Initialize Gradio with Colab-specific settings
-    demo.launch(share=False)
+    demo.launch(
+        share=True,  # Enable sharing for Colab
+        show_error=True,  # Show detailed error messages
+    )
 
 
 if __name__ == "__main__":
