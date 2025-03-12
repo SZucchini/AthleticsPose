@@ -2,7 +2,6 @@
 
 import os
 import tempfile
-from pathlib import Path
 from typing import Optional
 
 import gradio as gr
@@ -10,49 +9,51 @@ import gradio as gr
 from demo.pipeline import VideoPosePipeline
 from demo.visualization import PoseVisualizer
 
-DEFAULT_CHECKPOINT = "work_dir/20250302_110906/best.ckpt"
 
-
-def create_pose_demo(checkpoint_path: Optional[str] = None) -> gr.Blocks:
+def create_pose_demo(checkpoint_path: str) -> gr.Blocks:
     """Create pose estimation demo.
 
     Args:
-        checkpoint_path (Optional[str], optional): Path to model checkpoint.
-            If None, use default checkpoint. Defaults to None.
+        checkpoint_path (str): Path to model checkpoint.
 
     Returns:
         gr.Blocks: Gradio interface
 
     """
-    if checkpoint_path is None:
-        checkpoint_path = DEFAULT_CHECKPOINT
-
     if not os.path.exists(checkpoint_path):
-        raise FileNotFoundError(f"Checkpoint file not found: {checkpoint_path}")
+        raise FileNotFoundError(
+            f"Checkpoint file not found at: {checkpoint_path}\n"
+            "Please ensure the checkpoint file is correctly placed in the specified location."
+        )
 
     # Initialize pipeline and visualizer
     pipeline = VideoPosePipeline(checkpoint_path=checkpoint_path)
     visualizer = PoseVisualizer()
 
-    def process_video(video_path: str, progress: gr.Progress) -> str:
+    def process_video(video_path: str, progress: Optional[gr.Progress] = None) -> str:
         """Process video and create visualization.
 
         Args:
             video_path (str): Path to input video
-            progress (gr.Progress): Progress indicator
+            progress (Optional[gr.Progress], optional): Progress indicator. Defaults to None.
 
         Returns:
             str: Path to output video
 
         """
+
+        def update_progress(value: float, desc: str):
+            if progress is not None:
+                progress(value, desc=desc)
+
         # Update progress
-        progress(0, desc="Estimating poses...")
+        update_progress(0, "Estimating poses...")
 
         # Process video
         poses_3d = pipeline.process_video(video_path)
 
         # Update progress
-        progress(0.5, desc="Creating visualization...")
+        update_progress(0.5, "Creating visualization...")
 
         # Create animation
         temp_dir = tempfile.mkdtemp()
@@ -60,7 +61,7 @@ def create_pose_demo(checkpoint_path: Optional[str] = None) -> gr.Blocks:
         output_video = visualizer.create_animation(poses_3d, output_path)
 
         # Update progress
-        progress(1.0, desc="Done!")
+        update_progress(1.0, "Done!")
 
         return output_video
 
@@ -70,9 +71,10 @@ def create_pose_demo(checkpoint_path: Optional[str] = None) -> gr.Blocks:
             """
             # 3D Pose Estimation Demo
             Upload a video to estimate 3D poses.
+            Since this is a demo, the performance is unstable.
 
             **Note:**
-            - Maximum video duration: 3 seconds
+            - Recommended video duration: 5 seconds or less
             - Recommended resolution: HD (1280x720)
             """
         )
@@ -83,7 +85,6 @@ def create_pose_demo(checkpoint_path: Optional[str] = None) -> gr.Blocks:
                     label="Input Video",
                     format="mp4",
                     sources=["upload"],
-                    type="filepath",
                 )
                 submit_btn = gr.Button("Estimate Poses", variant="primary")
 
@@ -104,11 +105,21 @@ def create_pose_demo(checkpoint_path: Optional[str] = None) -> gr.Blocks:
     return demo
 
 
-def main():
-    """Run the Gradio application."""
-    demo = create_pose_demo()
-    demo.launch()
+def main(checkpoint_path: str):
+    """Run the Gradio application.
+
+    Args:
+        checkpoint_path (str): Path to model checkpoint.
+
+    """
+    demo = create_pose_demo(checkpoint_path)
+    demo.launch(share=True)
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("checkpoint_path", type=str, help="Path to model checkpoint")
+    args = parser.parse_args()
+    main(args.checkpoint_path)
