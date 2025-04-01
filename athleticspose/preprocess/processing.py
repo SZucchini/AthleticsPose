@@ -58,6 +58,7 @@ def process_files(files: list[str], output_dir: str, clip_length: int, split: st
                     "label3d": label3d,
                     "pixel_to_mm_scale": scale,
                     "norm_scale": norm_scale,
+                    "action": action,
                 }
                 output_file = os.path.join(output_dir, f"{data_cnt:05d}.pkl")
                 with open(output_file, "wb") as f:
