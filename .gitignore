@@ -2,6 +2,7 @@
 raw_mocap_data/
 data/
 notebooks/
+spaces/
 wandb/
 work_dir/
 uv.lock

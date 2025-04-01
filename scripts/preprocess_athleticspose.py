@@ -6,7 +6,7 @@ import os
 
 from natsort import natsorted
 
-from athleticspose.preprocess.processing import process_files
+from athleticspose.preprocess.processing import process_files, process_files_for_multiview
 
 
 def main():
@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--data_root", type=str, required=True)
     parser.add_argument("--output_root", type=str, default="data/processed")
     parser.add_argument("--clip_length", type=int, default=81)
+    parser.add_argument("--multiview", action="store_true")
     args = parser.parse_args()
 
     output_dir = os.path.join(args.output_root, f"AP_{args.clip_length}")
@@ -44,8 +45,11 @@ def main():
             else:
                 train_files.extend(marker_files)
 
-    process_files(train_files, output_dir, args.clip_length, "train")
-    process_files(test_files, output_dir, args.clip_length, "test")
+    if args.multiview:
+        process_files_for_multiview(test_files, output_dir, "test")
+    else:
+        process_files(train_files, output_dir, args.clip_length, "train")
+        process_files(test_files, output_dir, args.clip_length, "test")
 
 
 if __name__ == "__main__":

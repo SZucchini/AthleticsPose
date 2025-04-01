@@ -76,8 +76,11 @@ class VideoEstimator:
             return None
 
         # Get bbox with maximum score
-        max_idx = np.argmax(person_bboxes[:, -1])
-        return person_bboxes[max_idx, :4]
+        bbox_size = (person_bboxes[:, 2] - person_bboxes[:, 0]) * (person_bboxes[:, 3] - person_bboxes[:, 1])
+        max_size_idx = np.argmax(bbox_size)
+        # max_idx = np.argmax(person_bboxes[:, -1])
+        # return person_bboxes[max_idx, :4]
+        return person_bboxes[max_size_idx, :4]
 
     def process_frame(self, frame: np.ndarray) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
         """Process a single frame.
