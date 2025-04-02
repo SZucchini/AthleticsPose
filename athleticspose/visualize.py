@@ -116,18 +116,18 @@ def visualize_pose_comparison(
 
         # Draw ground truth (black)
         x0_gt, y0_gt, z0_gt = kpts3d_gt[:, 0], kpts3d_gt[:, 1], kpts3d_gt[:, 2]
-        ax.plot(x0_gt, y0_gt, z0_gt, "k.", label="GT")
+        ax.plot(x0_gt, y0_gt, z0_gt, "k.", label="GT", markersize=18)
         x_bone_gt, y_bone_gt, z_bone_gt = set_lines(x0_gt, y0_gt, z0_gt, h36m_bones)
         for x, y, z in zip(x_bone_gt, y_bone_gt, z_bone_gt, strict=False):
-            line = art3d.Line3D(x, y, z, color="black")
+            line = art3d.Line3D(x, y, z, color="black", linewidth=4.5)
             ax.add_line(line)
 
-        # Draw prediction (red)
+        # Draw prediction (red) with transparency
         x0_pred, y0_pred, z0_pred = kpts3d_pred[:, 0], kpts3d_pred[:, 1], kpts3d_pred[:, 2]
-        ax.plot(x0_pred, y0_pred, z0_pred, "r.", label="Pred")
+        ax.plot(x0_pred, y0_pred, z0_pred, "r.", label="Pred", markersize=18, alpha=0.8)
         x_bone_pred, y_bone_pred, z_bone_pred = set_lines(x0_pred, y0_pred, z0_pred, h36m_bones)
         for x, y, z in zip(x_bone_pred, y_bone_pred, z_bone_pred, strict=False):
-            line = art3d.Line3D(x, y, z, color="red")
+            line = art3d.Line3D(x, y, z, color="red", linewidth=4.5, alpha=0.8)
             ax.add_line(line)
 
         ax.invert_xaxis()
