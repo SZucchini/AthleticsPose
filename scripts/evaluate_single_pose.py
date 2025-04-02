@@ -10,6 +10,7 @@ import torch
 from athleticspose.datasets.ap_dataset import read_pkl
 from athleticspose.loss import calc_mpjpe, p_mpjpe
 from athleticspose.plmodules.linghtning_module import LightningPose3D
+from athleticspose.visualize import align_poses, visualize_pose_comparison
 
 
 def calculate_metrics(
@@ -66,6 +67,17 @@ def main():
         default="work_dir/20250302_110906/best.ckpt",
         help="Path to model checkpoint",
     )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="data/output",
+        help="Directory to save visualization results",
+    )
+    parser.add_argument(
+        "--visualize",
+        action="store_true",
+        help="If set, visualize the prediction and ground truth",
+    )
     args = parser.parse_args()
 
     # Set device
@@ -105,6 +117,44 @@ def main():
     print(f"Action: {action}")
     print(f"MPJPE: {mpjpe:.2f} mm")
     print(f"PA-MPJPE: {pa_mpjpe:.2f} mm")
+
+    # Visualize if requested
+    if args.visualize:
+        # Convert prediction and label to numpy and denormalize
+        pred = pred.cpu().numpy()
+        label3d = label3d.cpu().numpy()
+
+        pred_denom = np.zeros_like(pred)
+        label3d_denom = np.zeros_like(label3d)
+        for i in range(pred.shape[0]):
+            pred_denom[i, :, :, :] = pred[i] * norm_scale[i]
+            label3d_denom[i, :, :, :] = label3d[i] * norm_scale[i]
+        pred_denom = pred_denom / p2mm.cpu().numpy()[:, :, None, None]
+        label3d_denom = label3d_denom / p2mm.cpu().numpy()[:, :, None, None]
+
+        # Prepare output path
+        output_dir = Path(args.output_dir)
+        output_dir.mkdir(exist_ok=True, parents=True)
+        output_base = output_dir / Path(args.input_file).stem
+
+        # Visualize raw poses
+        visualize_pose_comparison(
+            pred_denom[0],  # Remove batch dimension
+            label3d_denom[0],  # Remove batch dimension
+            str(output_base),
+            title=f"Action: {action}",
+            is_aligned=False,
+        )
+
+        # Align prediction to ground truth and visualize
+        pred_aligned = align_poses(pred_denom[0], label3d_denom[0])
+        visualize_pose_comparison(
+            pred_aligned,  # Already batch dimension removed
+            label3d_denom[0],  # Remove batch dimension
+            str(output_base),
+            title=f"Action: {action}",
+            is_aligned=True,
+        )
 
 
 if __name__ == "__main__":
