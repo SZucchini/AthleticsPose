@@ -2,21 +2,26 @@
 
 import numpy as np
 
-from athleticspose.statics.joints import joint_index_h36m_to_mocap
+from athleticspose.statics.joints import joint_index_h36m_to_hj_mocap, joint_index_h36m_to_mocap
 
 
-def mocap_to_h36m(mocap_markers: np.ndarray) -> np.ndarray:
+def mocap_to_h36m(mocap_markers: np.ndarray, hj_mocap: bool = False) -> np.ndarray:
     """Convert mocap markers to Human3.6M format.
 
     Args:
-        mocap_markers: The mocap markers to convert. The shape should be (T, 84, 3).
+        mocap_markers: The mocap markers to convert. The shape should be (T, J, 3).
+        hj_mocap: If True, convert to Human3.6M format with HJ markers. Defaults to False.
 
     Returns:
         h36m_markers: The Human3.6M markers. The shape is (T, 17, 3).
 
     """
     h36m_markers = np.zeros((mocap_markers.shape[0], 17, 3))
-    for i, joint_idx in joint_index_h36m_to_mocap.items():
+    if hj_mocap:
+        joint_index = joint_index_h36m_to_hj_mocap
+    else:
+        joint_index = joint_index_h36m_to_mocap
+    for i, joint_idx in joint_index.items():
         h36m_markers[:, i, :] = np.mean(mocap_markers[:, joint_idx, :], axis=1)
     return h36m_markers
 
