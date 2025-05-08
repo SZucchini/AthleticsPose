@@ -194,6 +194,26 @@ joint_index_h36m_to_mocap = {
     16: [mocap_joints_name_to_index["RWRT"]],
 }
 
+joint_index_h36m_to_hj_mocap = {
+    0: [hj_mocap_joints_name_to_index["LumbarJC"]],
+    1: [hj_mocap_joints_name_to_index["RhipC"]],
+    2: [hj_mocap_joints_name_to_index["RkneeC"]],
+    3: [hj_mocap_joints_name_to_index["RankleC"]],
+    4: [hj_mocap_joints_name_to_index["LhipC"]],
+    5: [hj_mocap_joints_name_to_index["LkneeC"]],
+    6: [hj_mocap_joints_name_to_index["LankleC"]],
+    7: [hj_mocap_joints_name_to_index["T8"]],
+    8: [hj_mocap_joints_name_to_index["C7"]],
+    9: [hj_mocap_joints_name_to_index["REAR"], hj_mocap_joints_name_to_index["LEAR"]],
+    10: [hj_mocap_joints_name_to_index["Top_HEAD"]],
+    11: [hj_mocap_joints_name_to_index["LSHA"]],
+    12: [hj_mocap_joints_name_to_index["LELB"]],
+    13: [hj_mocap_joints_name_to_index["LWST"]],
+    14: [hj_mocap_joints_name_to_index["RSHA"]],
+    15: [hj_mocap_joints_name_to_index["RELB"]],
+    16: [hj_mocap_joints_name_to_index["RWST"]],
+}
+
 joint_index_coco_to_mocap = {
     0: [mocap_joints_name_to_index["CLAV"], mocap_joints_name_to_index["Nasion"]],
     1: [],
