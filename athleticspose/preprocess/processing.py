@@ -147,6 +147,7 @@ def process_hj_files(files: list[str], output_dir: str, clip_length: int, split:
         action = "highjump"
         kpts_world = np.load(file)
         kpts_world = mocap_to_h36m(kpts_world, hj_mocap=True)
+        kpts_world *= 1000
 
         num_cameras = 8
         camera_positions, target_positions = sampling_camera_and_target_positions(kpts_world, num_cameras=num_cameras)
