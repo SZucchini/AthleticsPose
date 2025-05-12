@@ -1,0 +1,37 @@
+hydra:
+  run:
+    dir: work_dir/${exp_name}/${now:%Y%m%d}-${now:%H%M%S}
+  sweep:
+    dir: multirun/${exp_name}/${now:%Y%m%d}-${now:%H%M%S}
+
+data:
+  train_dir: "./data/processed/AP_81/train"
+  test_dir: "./data/processed/AP_81/test"
+
+datamodule:
+  batch_size: 16
+
+exp_name: EXP-bs${datamodule.batch_size}-small
+
+model:
+  dim_feat: 128
+  dim_in: 3
+  n_frames: 81
+  n_layers: 16
+  neighbour_num: 2
+  num_heads: 8
+
+trainer:
+  accelerator: "gpu"
+  devices: 1
+  precision: "bf16"
+  max_epochs: 60
+  min_epochs: 40
+
+train:
+  batch_size: 32
+  lr: 5e-4
+  lr_decay: 0.99
+  weight_decay: 0.01
+
+seed: 42
