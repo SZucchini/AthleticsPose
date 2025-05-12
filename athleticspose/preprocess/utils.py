@@ -133,3 +133,73 @@ def split_clips(
             clip_start += stride
 
     return clips
+
+
+def sampling_camera_and_target_positions(
+    kpts_world: np.ndarray,
+    num_cameras: int = 8,
+    fov_deg: float = 60.0,
+    distance_factor: float = 2.0,
+    target_noise_scale: float = 0.05,
+    min_polar_angle_deg: float = 30.0,
+    rng: np.random.Generator | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Sample camera and target positions.
+
+    Args:
+        kpts_world (np.ndarray): 3D keypoints in world coordinates. (T, J, 3)
+        num_cameras (int): Number of cameras to sample.
+        fov_deg (float): Field of view in degrees.
+        distance_factor (float): Distance factor for camera placement.
+        target_noise_scale (float): Standard deviation of noise for target positions.
+        min_polar_angle_deg (float): Minimum polar angle in degrees.
+        rng (np.random.Generator | None): Random number generator.
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: Tuple of camera positions and target positions.
+            Each of shape (num_cameras, 3).
+
+    """
+    if rng is None:
+        rng = np.random.default_rng()
+
+    pts = np.asarray(kpts_world, dtype=np.float64).reshape(-1, 3)
+    if pts.size == 0:
+        raise ValueError("kpts_world must contain at least one point.")
+
+    min_xyz, max_xyz = pts.min(axis=0), pts.max(axis=0)
+    center = 0.5 * (min_xyz + max_xyz)
+    radius = np.linalg.norm(pts - center, axis=1).max()
+    if radius == 0.0:
+        radius = 1e-6
+
+    fov_rad = np.deg2rad(fov_deg)
+    d_min = radius / np.tan(fov_rad * 0.5)
+    distance = max(distance_factor * radius, d_min * 1.05)
+
+    theta_min = np.deg2rad(min_polar_angle_deg)
+    if not (0.0 <= min_polar_angle_deg <= 90.0):
+        raise ValueError("min_polar_angle_deg must be in [0, 90]")
+    cos_theta_max = np.cos(theta_min)
+
+    phi = rng.uniform(0.0, 2.0 * np.pi, size=num_cameras)
+    cos_theta = rng.uniform(0.0, cos_theta_max, num_cameras)
+    sin_theta = np.sqrt(1.0 - cos_theta**2)
+
+    dirs = np.column_stack(
+        (
+            sin_theta * np.cos(phi),
+            sin_theta * np.sin(phi),
+            cos_theta,
+        )
+    )
+    camera_positions = center + distance * dirs
+
+    noise_sigma = target_noise_scale * radius
+    target_positions = center + rng.normal(
+        loc=0.0,
+        scale=noise_sigma,
+        size=(num_cameras, 3),
+    )
+
+    return camera_positions.astype(np.float32), target_positions.astype(np.float32)
