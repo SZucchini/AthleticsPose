@@ -4,13 +4,14 @@ import os
 import random
 import time
 
+import hydra
 import numpy as np
 import pytorch_lightning as pl
 import torch
+import wandb
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
-import wandb
 from athleticspose.plmodules.data_module import PoseDataModule
 from athleticspose.plmodules.linghtning_module import LightningPose3D
 
@@ -26,16 +27,17 @@ def create_work_dir(work_dir: str) -> None:
         os.makedirs(work_dir)
 
 
-def init_wandb(work_dir: str) -> WandbLogger:
+def init_wandb(cfg, work_dir: str) -> WandbLogger:
     """Initialize wandb.
 
     Args:
+        cfg: Config object.
         work_dir (str): Work directory.
 
     """
-    run_name = work_dir.replace("work_dir/", "").replace("/", "-")
-    wandb.init(project="AthleticsPose", name=run_name)
-    wandb_logger = WandbLogger(project="AthleticsPose", name=run_name)
+    timestamp = time.strftime("%Y%m%d%H%M%S")
+    wandb.init(project="AthleticsPose", name=f"{cfg.exp_name}-{timestamp}")
+    wandb_logger = WandbLogger(project="AthleticsPose", name=f"{cfg.exp_name}-{timestamp}", save_dir=work_dir)
     return wandb_logger
 
 
@@ -58,21 +60,22 @@ def set_seed(seed: int = 42) -> None:
     torch.backends.mps.benchmark = False
 
 
-def main():
+@hydra.main(version_base=None, config_path="../configs", config_name="default")
+def main(cfg):
     """Execute the training script."""
-    set_seed()
-    work_dir = os.path.join("work_dir", time.strftime("%Y%m%d_%H%M%S"))
-    create_work_dir(work_dir)
-    wandb_logger = init_wandb(work_dir)
+    set_seed(cfg.seed)
+    pl.seed_everything(cfg.seed)
+    work_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+    wandb_logger = init_wandb(cfg, work_dir)
 
-    model = LightningPose3D()
-    data_module = PoseDataModule()
+    model = LightningPose3D(cfg)
+    data_module = PoseDataModule(cfg)
 
     checkpoint_callback = ModelCheckpoint(
         monitor="val/epoch/mpjpe",
         dirpath=work_dir,
         filename="best",
-        save_top_k=1,
+        save_top_k=3,
         mode="min",
     )
     last_checkpoint_callback = ModelCheckpoint(dirpath=work_dir, filename="last", save_last=True)
@@ -83,11 +86,11 @@ def main():
     )
 
     trainer = pl.Trainer(
-        accelerator="mps",
-        devices=1,
-        precision="32",
-        max_epochs=60,
-        min_epochs=40,
+        accelerator=cfg.trainer.accelerator,
+        devices=cfg.trainer.devices,
+        precision=cfg.trainer.precision,
+        max_epochs=cfg.trainer.max_epochs,
+        min_epochs=cfg.trainer.min_epochs,
         logger=wandb_logger,
         callbacks=[
             checkpoint_callback,
@@ -98,7 +101,7 @@ def main():
     )
 
     trainer.fit(model, datamodule=data_module)
-    trainer.test(model, datamodule=data_module)
+    # trainer.test(model, datamodule=data_module)
 
     wandb.finish()
 

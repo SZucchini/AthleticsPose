@@ -30,20 +30,21 @@ def decay_lr_exponentially(lr: float, lr_decay: float, optimizer: optim.Optimize
 class LightningPose3D(pl.LightningModule):
     """Lightning module for the Pose3D model."""
 
-    def __init__(self):
+    def __init__(self, cfg):
         """Initialize the LightningPose3D module."""
         super().__init__()
         self.model = MotionAGFormer(
-            n_layers=16,
-            dim_in=3,
-            dim_feat=128,
-            num_heads=8,
-            neighbour_num=2,
-            n_frames=81,
+            n_layers=cfg.model.n_layers,
+            dim_in=cfg.model.dim_in,
+            dim_feat=cfg.model.dim_feat,
+            num_heads=cfg.model.num_heads,
+            neighbour_num=cfg.model.neighbour_num,
+            n_frames=cfg.model.n_frames,
         )
-        self.lr = 0.0005
-        self.lr_decay = 0.99
-        self.weight_decay = 0.01
+        self.lr = cfg.train.lr
+        self.lr_decay = cfg.train.lr_decay
+        self.weight_decay = cfg.train.weight_decay
+
         self.train_epoch_loss = 0.0
         self.train_step_cnt = 0
         self.val_epoch_mpjpe = 0
@@ -124,10 +125,10 @@ class LightningPose3D(pl.LightningModule):
     def calculate_metrics(self, pred, y, p2mm, norm_scale):
         """Calculate validation metrics."""
         pred[:, :, 0, :] = 0
-        pred = pred.cpu().numpy()
-        y = y.cpu().numpy()
-        p2mm = p2mm.cpu().numpy()
-        norm_scale = norm_scale.cpu().numpy()
+        pred = pred.to(torch.float32).cpu().numpy()
+        y = y.to(torch.float32).cpu().numpy()
+        p2mm = p2mm.to(torch.float32).cpu().numpy()
+        norm_scale = norm_scale.to(torch.float32).cpu().numpy()
 
         pred_denom = np.zeros_like(pred)
         y_denom = np.zeros_like(y)

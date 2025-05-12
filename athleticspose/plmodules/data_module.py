@@ -9,23 +9,25 @@ from athleticspose.datasets.ap_dataset import MotionDataset3D, flip_data
 class PoseDataModule(pl.LightningDataModule):
     """Data module for the pose estimation task."""
 
-    def __init__(self):
+    def __init__(self, cfg):
         """Initialize the data module."""
         super().__init__()
-        self.batch_size = 16
+        self.batch_size = cfg.datamodule.batch_size
         self.train_transform = flip_data
+        self.train_dir = cfg.data.train_dir
+        self.test_dir = cfg.data.test_dir
 
     def setup(self, stage: str) -> None:
         """Set the data module."""
         if stage == "fit" or stage is None:
-            self.train_dataset = MotionDataset3D("./data/processed/AP_81/train", transform=self.train_transform)
-            self.val_dataset = MotionDataset3D("./data/processed/AP_81/test")
+            self.train_dataset = MotionDataset3D(self.train_dir, transform=self.train_transform)
+            self.val_dataset = MotionDataset3D(self.test_dir)
 
         if stage == "validate":
-            self.val_dataset = MotionDataset3D("./data/processed/AP_81/test")
+            self.val_dataset = MotionDataset3D(self.test_dir)
 
         if stage == "test":
-            self.test_dataset = MotionDataset3D("./data/processed/AP_81/test")
+            self.test_dataset = MotionDataset3D(self.test_dir)
 
     def train_dataloader(self):
         """Train dataloader."""
