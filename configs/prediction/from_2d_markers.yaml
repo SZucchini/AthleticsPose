@@ -1,0 +1,36 @@
+# @package prediction
+# 2D marker prediction configuration for AthleticsPose
+mode: "from_2d_markers"
+
+# Input settings
+input:
+  marker_type: "gt"  # "gt" | "det_coco" | "det_ft"
+  data_root: "data/AthleticsPoseDataset"
+
+# Output settings
+output:
+  output_dir: "data/AthleticsPoseDataset/predictions"
+  save_predictions: true
+  save_evaluation: true
+  timestamp_suffix: false
+
+# Processing settings
+processing:
+  batch_size: 32
+  num_workers: 4
+  device: "auto"
+
+# Model settings
+model:
+  checkpoint_path: "work_dir/best.ckpt"  # Path to model checkpoint
+  inference_config: null
+
+# Test subjects from data configuration
+test_subjects: ["S00", "S05", "S11", "S12", "S13", "S16", "S17", "S20", "S21", "S22", "S23"]
+
+# Evaluation settings
+evaluation:
+  enable_mpjpe: true
+  enable_pa_mpjpe: true
+  enable_velocity_error: false
+  decimal_places: 2

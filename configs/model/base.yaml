@@ -1,0 +1,6 @@
+dim_feat: 128
+dim_in: 3
+n_frames: 81
+n_layers: 16
+neighbour_num: 2
+num_heads: 8

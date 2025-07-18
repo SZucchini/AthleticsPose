@@ -1,0 +1,35 @@
+# @package evaluation
+# H36M pretrained evaluation configuration for AthleticsPose
+
+# Checkpoint settings
+checkpoint:
+  path: null  # Path to model checkpoint
+  auto_find_best: true        # Automatically find the best checkpoint in work_dir (future feature)
+  h36m_ckpt: "data/checkpoints/h36m_pretrained"  # Path to H36M pretrained checkpoint (.pth file)
+
+# Runtime settings
+runtime:
+  batch_size: 32              # Evaluation batch size (can be larger than training)
+  num_workers: 4              # Number of data loading workers
+  device: "auto"              # Device selection: "auto", "cuda", "cpu"
+  precision: 32               # Model precision: 16, 32
+
+# Metrics settings
+metrics:
+  enable_mpjpe: true          # Mean Per Joint Position Error
+  enable_pa_mpjpe: true       # Procrustes Aligned MPJPE
+  enable_n_mpjpe: false       # Normalized MPJPE (optional)
+  enable_velocity_error: false # Velocity error
+
+# Output settings
+output:
+  verbose: true               # Print detailed progress information
+  show_progress: true         # Show progress during evaluation
+  print_per_action: true      # Print results by action (if multiple actions exist)
+  print_per_subject: true     # Print results by subject (if multiple subjects exist)
+  print_per_joint: true      # Print results by joint (H36M format, 17 joints)
+  decimal_places: 2           # Number of decimal places for metric display
+
+# Advanced settings
+advanced:
+  memory_efficient: false     # Use memory-efficient processing (slower but less memory)
