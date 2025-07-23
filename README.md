@@ -2,6 +2,8 @@
 
 [![arXiv](https://img.shields.io/badge/arXiv-2507.12905-b31b1b.svg)](https://arxiv.org/abs/2507.12905)
 
+![Dataset Example](docs/assets/all_pose_animation.gif)
+
 ## 🚧 Work in Progress
 
 This repository is currently under development. Basic files have been uploaded, but the project is still in preparation phase. Please check back later for updates.
