@@ -1,4 +1,4 @@
-# AthleticsPose: Authentic Sports Motion Dataset on Athletic Field and Evaluation of Monocular 3D Pose Estimation Ability (MMSports at ACM MM 2025)
+# AthleticsPose: Authentic Sports Motion Dataset on Athletic Field and Evaluation of Monocular 3D Pose Estimation Ability (MMSports at ACMMM 2025)
 
 [![arXiv](https://img.shields.io/badge/arXiv-2507.12905-b31b1b.svg)](https://arxiv.org/abs/2507.12905)
 
