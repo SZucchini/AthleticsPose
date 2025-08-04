@@ -14,11 +14,33 @@ This repository contains the implementation for our paper "AthleticsPose: Authen
 
 ## Updates
 
+- **2025-08-04**: Added dataset download instructions and license files
 - **2025-07-18**: Initial repository setup and basic file upload
+
+## Dataset Download
+
+You can download the AthleticsPose dataset using either wget or curl:
+
+### Using wget
+```bash
+wget -O AthleticsPoseDataset.zip \
+  "https://github.com/SZucchini/AthleticsPose/releases/latest/download/AthleticsPoseDataset.zip"
+```
+
+### Using curl
+```bash
+curl -L -o AthleticsPoseDataset.zip \
+  "https://github.com/SZucchini/AthleticsPose/releases/latest/download/AthleticsPoseDataset.zip"
+```
+
+After downloading, extract the dataset:
+```bash
+unzip AthleticsPoseDataset.zip
+```
 
 ## TODO
 
-- [ ] Add dataset files and download instructions
+- [x] Add dataset files and download instructions
 - [ ] Complete README.md with detailed setup and usage instructions
 - [ ] Implement inference functionality for arbitrary video inputs
 - [ ] Provide pretrained model weights
@@ -54,7 +76,12 @@ If you find this work useful, please consider citing our paper:
 
 ## License
 
-This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License - see the LICENSE file for details.
+The **AthleticsPose Dataset** is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License. See the following files for details:
+
+- [LICENSE-DATASET](LICENSE-DATASET) - License for the dataset
+- [LICENSES/CC-BY-NC-SA-4.0.txt](LICENSES/CC-BY-NC-SA-4.0.txt) - Full license text
+
+Note: This license applies specifically to the dataset. The code in this repository may be licensed differently.
 
 ## Contact
 
