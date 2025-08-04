@@ -1,0 +1,18 @@
+AthleticsPose Dataset — License (CC BY-NC-SA 4.0)
+SPDX-License-Identifier: CC-BY-NC-SA-4.0
+
+Copyright (c) 2025
+Tomohiro Suzuki, Ryota Tanaka, Calvin Yeung, and Keisuke Fujii
+All rights reserved.
+
+This dataset (“AthleticsPose Dataset”, file: AthleticsPoseDataset.zip) is licensed under
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+
+Scope: This license applies to all dataset contents (images/videos/annotations/metadata) in AthleticsPoseDataset.zip.
+Code in this repository may be licensed differently; see the repository’s LICENSE for code.
+
+You are free to Share and Adapt under the terms: Attribution, NonCommercial, ShareAlike, and No additional restrictions.
+No warranty; provided “AS IS”. If any discrepancy, the CC BY-NC-SA 4.0 legal code governs (see LICENSES/CC-BY-NC-SA-4.0.txt).
+
+Suggested attribution:
+“This work uses AthleticsPose Dataset (CC BY-NC-SA 4.0) by Suzuki et al. (https://arxiv.org/abs/2507.12905).”
