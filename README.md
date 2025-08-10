@@ -4,59 +4,118 @@
 
 ![Dataset Example](docs/assets/all_pose_animation.gif)
 
-## 🚧 Work in Progress
-
-This repository is currently under development. Basic files and **Dataset** have been uploaded, but the project is still in preparation phase. Please check back later for updates.
-
 ## Abstract
 
 This repository contains the implementation for our paper "AthleticsPose: Authentic Sports Motion Dataset on Athletic Field and Evaluation of Monocular 3D Pose Estimation Ability". We introduce a comprehensive dataset and evaluation framework for 3D pose estimation in athletics scenarios.
 
 ## Updates
 
+- **2025-08-10**: Added simple usage of codebase.
 - **2025-08-04**: Added dataset download instructions and license files
 - **2025-07-18**: Initial repository setup and basic file upload
 
-## Dataset Download
+## Setup
 
-You can download the AthleticsPose dataset using either wget or curl:
-
-### Using wget
+### Clone the Repository
+To get started, clone this repository:
 ```bash
-wget -O AthleticsPoseDataset.zip \
-  "https://github.com/SZucchini/AthleticsPose/releases/latest/download/AthleticsPoseDataset.zip"
+git clone https://github.com/your-username/AthleticsPose.git
+cd AthleticsPose
 ```
 
-### Using curl
+### Install Dependencies
+
+Use the provided `Makefile` to set up the environment and download the dataset and pretrained checkpoints.
+This requires `make` and [`uv`](https://docs.astral.sh/uv/) to be installed on your system.
+We also assume **CUDA 11.8** is available for GPU acceleration.
+
+If you don't have `make`, install it via your package manager:
+- Ubuntu/Debian: `sudo apt-get install make`
+- macOS: `brew install make`
+
+If you don't have `uv`, install it with:
 ```bash
-curl -L -o AthleticsPoseDataset.zip \
-  "https://github.com/SZucchini/AthleticsPose/releases/latest/download/AthleticsPoseDataset.zip"
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+or on macOS with Homebrew:
+```bash
+brew install uv
 ```
 
-After downloading, extract the dataset:
+Then run the initial setup:
 ```bash
-unzip AthleticsPoseDataset.zip
+make setup
 ```
+This will:
+1. Create and install the Python virtual environment with all dependencies
+2. Download and extract the dataset and pretrained checkpoints
+
+### Optional commands
+Environment only (no dataset/checkpoint download):
+```bash
+make venv
+```
+
+Dataset and checkpoints only (no environment setup):
+```bash
+make download
+```
+
+You can download only the AthleticsPose dataset using the following command:
+```bash
+curl -L -o data.zip \
+  "https://github.com/SZucchini/AthleticsPose/releases/latest/download/data.zip"
+```
+or
+```bash
+wget -O data.zip \
+  "https://github.com/SZucchini/AthleticsPose/releases/latest/download/data.zip"
+```
+
+## Usage
+
+### Evaluate using checkpoints
+For the model trained on AthleticsPose dataset, run:
+```bash
+uv run python scripts/evaluate.py evaluation=default
+```
+
+For the model trained on Human3.6M dataset, run:
+```bash
+uv run python scripts/evaluate.py evaluation=h36m_pretrained
+```
+
+For the model trained on AthletePose3D dataset, run:
+```bash
+uv run python scripts/evaluate.py evaluation=ap3d_pretrained
+```
+
+### Train a model from scratch
+To train a model from scratch, use the following command:
+```bash
+uv run python scripts/train.py exp_name=<your_experiment_name> \
+  data.input_2d_type=det \  # or gt
+  data.det_model_type=ft \  # or pretrained
+  wandb.project=<your_wandb_project_name>  # You can use WandB for logging
+```
+
+### Predictions and analyses similar to those in the paper
+For example, to run the predictions and analyses similar to those in the paper, use:
+```bash
+uv run python scripts/predict.py prediction=from_2d_markers prediction.input.marker_type=det_ft
+uv run python scripts/analyze_predictions.py data/AthleticsPoseDataset/predictions
+```
+
 
 ## TODO
 
 - [x] Add dataset files and download instructions
-- [ ] Complete README.md with detailed setup and usage instructions
+- [x] Complete README.md with detailed setup and usage instructions
 - [ ] Implement inference functionality for arbitrary video inputs
-- [ ] Provide pretrained model weights
-- [ ] Add documentation for dataset structure and running methods
-
-## Installation
-Please use uv to install the package. This will ensure that all dependencies are correctly installed and the package is ready for use.
-
-```bash
-# Clone the repository
-git clone https://github.com/your-username/AthleticsPose.git
-cd AthleticsPose
-
-# Install dependencies
-uv sync
-```
+- [x] Provide pretrained model weights
+- [ ] Add documentation for dataset structure
+- [x] Add documentation for running methods
+- [ ] Add license for codes
 
 ## Citation
 
