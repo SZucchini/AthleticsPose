@@ -22,7 +22,7 @@ exp_name: your_experiment
 trainer:
   accelerator: "gpu"
   devices: 1
-  precision: "bf16"
+  precision: "32"  # or "bf16"
   max_epochs: 200
   min_epochs: 100
 
