@@ -22,7 +22,7 @@ processing:
 
 # Model settings
 model:
-  checkpoint_path: "work_dir/best.ckpt"  # Path to model checkpoint
+  checkpoint_path: "checkpoints/motionagformer-b-ath-det-ft-v1.ckpt"  # Path to model checkpoint
   inference_config: null
 
 # Test subjects from data configuration

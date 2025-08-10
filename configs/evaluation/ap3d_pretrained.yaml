@@ -5,7 +5,7 @@
 checkpoint:
   path: null  # Path to model checkpoint
   auto_find_best: true        # Automatically find the best checkpoint in work_dir (future feature)
-  h36m_ckpt: "data/checkpoints/ap3d_pretrained/motionagformer-s-ap3d.pth"  # Path to H36M pretrained checkpoint (.pth file)
+  h36m_ckpt: "checkpoints/motionagformer-s-ap3d.pth"  # Path to H36M pretrained checkpoint (.pth file)
 
 # Runtime settings
 runtime:

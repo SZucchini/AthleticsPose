@@ -3,7 +3,7 @@
 
 # Checkpoint settings
 checkpoint:
-  path: "work_dir/best.ckpt"  # Path to model checkpoint
+  path: "checkpoints/motionagformer-b-ath-det-ft-v1.ckpt"  # Path to model checkpoint
   auto_find_best: true        # Automatically find the best checkpoint in work_dir (future feature)
   h36m_ckpt: null             # Path to H36M pretrained checkpoint (.pth file) - optional
 
