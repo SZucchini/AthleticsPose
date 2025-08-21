@@ -1,0 +1,16 @@
+# @package data
+# Dynamic dataset configuration for AthleticsPose
+data_root: "data/AthleticsPoseDataset"
+clip_length: 81
+stride_train: 27  # clip_length // 3
+stride_test: 81   # clip_length (no overlap)
+test_subjects: ["S12", "S21", "S22", "S23"]
+
+# 2D input data configuration
+input_2d_type: "gt"         # "gt" | "det" - Use GT or detected 2D markers
+det_model_type: "pretrained" # "pretrained" | "ft" - Detection model type (only used when input_2d_type="det")
+
+# Filtering options (null = no filtering)
+filter_actions: null      # e.g., ["hurdle", "sprint"] for specific actions
+filter_subjects: null     # e.g., ["S01", "S05"] for specific subjects
+filter_cameras: null      # e.g., [0, 1, 2] for specific cameras
