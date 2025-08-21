@@ -1,6 +1,7 @@
 .DS_Store
 checkpoints/
 data/
+!configs/data/
 wandb/
 work_dir/
 
