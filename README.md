@@ -87,7 +87,7 @@ uv run python scripts/evaluate.py evaluation=h36m_pretrained
 
 For the model trained on AthletePose3D dataset, run:
 ```bash
-uv run python scripts/evaluate.py evaluation=ap3d_pretrained
+uv run python scripts/evaluate.py evaluation=ap3d_pretrained model=small
 ```
 
 ### Train a model from scratch
