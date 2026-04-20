@@ -8,6 +8,9 @@
 
 This repository contains the implementation for our paper "AthleticsPose: Authentic Sports Motion Dataset on Athletic Field and Evaluation of Monocular 3D Pose Estimation Ability". We introduce a comprehensive dataset and evaluation framework for 3D pose estimation in athletics scenarios.
 
+> [!NOTE]
+> We currently do not plan to release the original video files. Fully anonymizing the footage would require substantial time and cost, and the resulting anonymized images would have limited utility. If this policy changes in the future, we will update this repository accordingly.
+
 ## Updates
 
 - **2025-08-10**: Added simple usage of codebase.
